@@ -30,7 +30,7 @@ Best checkpoint loaded from step 300 (lowest val WER). Final test WER: **22.25%*
 
 ### Why LoRA over full fine-tuning
 
-- **3.33% trainable parameters** (27.9M of 809M) — adapter is 107MB vs 1.6GB full model
+- **3.33% trainable parameters** (27.9M of 837M total) — adapter is 107MB vs 1.6GB full model
 - Single A10G GPU (23GB), ~45 min training — no multi-GPU setup needed
 - Base model capabilities preserved: multilingual detection, timestamp generation
 
