@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+
+# Model weights
+*.bin
+*.safetensors
+*.pt
+*.ckpt
+
+# Training artifacts
+outputs/
+runs/
+wandb/
+
+# Environment
+.env
+venv/
+.venv/
+
+# IDE / OS
+.DS_Store
+*.log
+.ipynb_checkpoints/
+.vscode/

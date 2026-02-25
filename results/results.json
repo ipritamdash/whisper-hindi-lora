@@ -1,0 +1,49 @@
+{
+  "model": "openai/whisper-large-v3-turbo",
+  "dataset": "google/fleurs/hi_in",
+  "lora_config": {
+    "r": 32,
+    "alpha": 64,
+    "dropout": 0.05,
+    "target_modules": ["q_proj", "k_proj", "v_proj", "out_proj", "fc1", "fc2"]
+  },
+  "training": {
+    "epochs": 3,
+    "lr": 1e-4,
+    "batch_size": 4,
+    "grad_accum": 4,
+    "warmup": 50,
+    "total_steps": 399,
+    "training_time_seconds": 2732,
+    "hardware": "NVIDIA A10G 23GB"
+  },
+  "results": {
+    "baseline_wer": 35.56,
+    "finetuned_wer": 22.25,
+    "improvement_abs": 13.31,
+    "improvement_rel_pct": 37.4,
+    "test_samples": 418
+  },
+  "deployment": {
+    "engine": "faster-whisper",
+    "backend": "CTranslate2",
+    "quantization": "int8",
+    "wer": 22.70,
+    "note": "0.45% degradation from INT8 quantization vs PEFT inference"
+  },
+  "eval_curve": [
+    {"step": 50, "eval_loss": 0.2588, "eval_wer": 29.40},
+    {"step": 100, "eval_loss": 0.2337, "eval_wer": 25.74},
+    {"step": 150, "eval_loss": 0.2226, "eval_wer": 24.49},
+    {"step": 200, "eval_loss": 0.2171, "eval_wer": 23.43},
+    {"step": 250, "eval_loss": 0.2128, "eval_wer": 23.82},
+    {"step": 300, "eval_loss": 0.2153, "eval_wer": 22.42},
+    {"step": 350, "eval_loss": 0.2153, "eval_wer": 22.50}
+  ],
+  "framework_versions": {
+    "transformers": "4.57.3",
+    "peft": "0.18.1",
+    "torch": "2.6.0+cu124",
+    "datasets": "3.6.0"
+  }
+}

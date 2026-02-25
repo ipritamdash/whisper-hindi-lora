@@ -1,0 +1,11 @@
+torch>=2.0
+transformers>=4.40
+peft>=0.10
+datasets>=3.0
+evaluate
+jiwer
+accelerate
+tensorboard
+pyyaml
+faster-whisper
+ctranslate2

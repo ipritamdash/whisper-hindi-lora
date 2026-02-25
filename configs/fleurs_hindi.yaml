@@ -1,0 +1,51 @@
+# Whisper Large-v3-Turbo Hindi LoRA Fine-tuning Config
+# Hyperparameters sourced from:
+#   - LoRA-Whisper (arXiv:2406.06619): r=32, encoder+decoder, all linear layers
+#   - HuggingFace PEFT reference: alpha=2*rank, warmup=50
+#   - Collabora Hindi ASR: baseline/target WER expectations
+
+model:
+  base_model: "openai/whisper-large-v3-turbo"
+  language: "hi"
+  task: "transcribe"
+
+dataset:
+  name: "google/fleurs"
+  config: "hi_in"
+  sampling_rate: 16000
+
+lora:
+  r: 32
+  alpha: 64                 # 2x rank (standard PEFT recommendation)
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - out_proj
+    - fc1
+    - fc2
+  bias: "none"
+
+training:
+  epochs: 3
+  learning_rate: 1.0e-4     # Conservative for large pretrained model
+  lr_scheduler: "linear"
+  warmup_steps: 50
+  batch_size: 4
+  gradient_accumulation_steps: 4   # Effective batch = 16
+  weight_decay: 0.01
+  bf16: true
+  gradient_checkpointing: true
+  max_label_length: 225
+  seed: 42
+
+evaluation:
+  eval_steps: 50
+  save_steps: 50
+  save_total_limit: 3
+  metric_for_best_model: "wer"
+  per_device_eval_batch_size: 8
+
+output:
+  dir: "./outputs/whisper-large-v3-turbo-hindi-lora"
