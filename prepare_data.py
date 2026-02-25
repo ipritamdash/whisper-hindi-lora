@@ -19,7 +19,6 @@ References:
   - ctc-forced-aligner (https://github.com/MahmoudAshraf97/ctc-forced-aligner)
 """
 
-import os
 import json
 import argparse
 import unicodedata
