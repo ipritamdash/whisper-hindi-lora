@@ -9,3 +9,5 @@ tensorboard
 pyyaml
 faster-whisper
 ctranslate2
+soundfile
+librosa

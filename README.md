@@ -1,6 +1,6 @@
 # Whisper Large-v3-Turbo Hindi LoRA
 
-Parameter-efficient fine-tuning of [openai/whisper-large-v3-turbo](https://huggingface.co/openai/whisper-large-v3-turbo) for Hindi ASR, reducing WER from **35.56% to 22.25%** on FLEURS using LoRA with only 3.33% trainable parameters.
+End-to-end ASR fine-tuning pipeline: **data preparation → LoRA training → CTranslate2 deployment**. Fine-tunes [openai/whisper-large-v3-turbo](https://huggingface.co/openai/whisper-large-v3-turbo) for Hindi ASR, reducing WER from **35.56% to 22.25%** on FLEURS with only 3.33% trainable parameters.
 
 ## Results
 
@@ -57,31 +57,53 @@ All choices are research-backed:
 - Read speech from Wikipedia sentences, 16kHz mono, Devanagari script
 - License: CC BY 4.0
 
-## Quick Start
+## Full Pipeline
 
-### Training
+```
+Raw Audio Files
+    ↓ prepare_data.py (transcribe + align + segment)
+Training-Ready Dataset (10-30s chunks at sentence boundaries)
+    ↓ train.py (LoRA fine-tuning)
+LoRA Adapter (107MB)
+    ↓ convert_and_eval.py (merge + quantize + evaluate)
+CTranslate2 INT8 Model → Production Inference via faster-whisper
+```
+
+### 1. Data Preparation
+
+Prepares raw audio for training: transcription with word-level alignment, sentence-boundary segmentation, and confidence-based quality filtering.
 
 ```bash
 pip install -r requirements.txt
 
+# Process raw audio into training-ready chunks
+python prepare_data.py \
+    --audio-dir raw_audio/ \
+    --output-dir dataset/ \
+    --language hi \
+    --min-duration 10 \
+    --max-duration 30 \
+    --min-confidence 0.5
+```
+
+This produces:
+- `audio/segment_*.wav` — segmented audio (16kHz mono)
+- `manifest.json` — transcripts + metadata for each segment
+- `stats.json` — dataset statistics for quality review
+
+The segmentation respects sentence boundaries using word-level timestamps from faster-whisper's CTC attention weights. Supports Hindi danda (।) and standard punctuation as split points. For higher-precision alignment, consider [ctc-forced-aligner](https://github.com/MahmoudAshraf97/ctc-forced-aligner) with wav2vec2/MMS models.
+
+### 2. Training
+
+```bash
 # Single GPU training (~45 min on A10G)
 python train.py --config configs/fleurs_hindi.yaml --device cuda:0
 ```
 
-### Deployment Pipeline
-
-```
-LoRA Adapter (107MB)
-    ↓ merge_and_unload()
-Merged HF Model (1.6GB)
-    ↓ ct2-transformers-converter --quantization int8
-CTranslate2 Model (~800MB)
-    ↓ faster_whisper.WhisperModel()
-Production Inference (4x faster, 50% less VRAM)
-```
+### 3. Deployment
 
 ```bash
-# Full pipeline: merge → convert → evaluate
+# Full pipeline: merge → CTranslate2 INT8 → faster-whisper evaluate
 python convert_and_eval.py --lora-dir outputs/whisper-large-v3-turbo-hindi-lora --quant int8 --gpu 0
 ```
 
@@ -143,6 +165,7 @@ print(processor.batch_decode(predicted_ids, skip_special_tokens=True)[0])
 
 ```
 whisper-hindi-lora/
+├── prepare_data.py        # Raw audio → training-ready dataset
 ├── train.py               # LoRA fine-tuning pipeline
 ├── convert_and_eval.py    # Merge → CTranslate2 → faster-whisper eval
 ├── configs/
